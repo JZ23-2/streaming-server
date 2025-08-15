@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18
 
 # Setting working directory
 WORKDIR /app
@@ -10,7 +10,8 @@ COPY package*.json ./
 RUN npm install
 
 # Install FFmpeg. This is needed to convert the video to HLS
-RUN apk add --no-cache ffmpeg
+# RUN apk add --no-cache ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
 
 # /usr/bin/ffmpeg is the default path for ffmpeg, copy it to /app
 RUN cp /usr/bin/ffmpeg ./

@@ -1,7 +1,7 @@
-const streamKeyService = require("../services/streamKeyService");
+import * as streamKeyService  from "../services/streamKeyService.js";
 
-async function createStreamKey(req, res) {
-  const { email} = req.body;
+export async function createStreamKey(req, res) {
+  const { email } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email are required" });
@@ -10,7 +10,3 @@ async function createStreamKey(req, res) {
   const result = streamKeyService.createStreamKey(email);
   res.json(result);
 }
-
-module.exports = {
-  createStreamKey,
-};

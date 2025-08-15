@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import * as streamKeyController from "../controllers/streamKeyController.js";
+
 const router = express.Router();
-const streamKeyController = require("../controllers/streamKeyController");
 
 /**
  * @swagger
@@ -47,4 +48,5 @@ const streamKeyController = require("../controllers/streamKeyController");
  */
 router.post("/create-stream-key", streamKeyController.createStreamKey);
 
-module.exports = router;
+
+export default router;

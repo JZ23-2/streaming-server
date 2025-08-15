@@ -6,10 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@dfinity/agent": "^3.2.1",
+    "@dfinity/candid": "^3.2.1",
+    "@dfinity/principal": "^3.2.1",
+    "dotenv": "^17.2.1",
     "node-media-server": "^2.6.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"

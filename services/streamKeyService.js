@@ -1,23 +1,21 @@
-const crypto = require("crypto");
+import crypto from "crypto";
+import { getUserByStreamingKey } from "./userService.js";
 
 const streamKeysDB = new Map();
 
-function createStreamKey(email) {
+export function createStreamKey(email) {
   const streamKey = crypto.randomBytes(8).toString("hex");
-  streamKeysDB.set(streamKey, { email});
+  streamKeysDB.set(streamKey, { email });
   return { streamKey, email };
 }
 
-function validateStreamKey(key) {
-  return streamKeysDB.has(key);
+export async function validateStreamKey(key) {
+  console.log(key);
+  const response = await getUserByStreamingKey(key);
+  console.log(response);
 }
 
-function getStreamKeyInfo(key) {
+export function getStreamKeyInfo(key) {
   return streamKeysDB.get(key);
 }
 
-module.exports = {
-  createStreamKey,
-  validateStreamKey,
-  getStreamKeyInfo,
-};

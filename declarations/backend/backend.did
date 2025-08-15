@@ -1,0 +1,78 @@
+type User = 
+ record {
+   created_at: int;
+   principal_id: text;
+   profile_picture: text;
+   streaming_key: text;
+   username: text;
+ };
+type Subscribe = 
+ record {
+   end_date: int;
+   principal_id: text;
+   start_date: int;
+   subscribing: User;
+ };
+type Result_6 = 
+ variant {
+   err: text;
+   ok: vec Following;
+ };
+type Result_5 = 
+ variant {
+   err: text;
+   ok: vec Subscribe;
+ };
+type Result_4 = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Result_3 = 
+ variant {
+   err: text;
+   ok: Subscribe;
+ };
+type Result_2 = 
+ variant {
+   err: text;
+   ok: bool;
+ };
+type Result_1 = 
+ variant {
+   err: text;
+   ok: User;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type Following = 
+ record {
+   following: User;
+   principal_id: text;
+ };
+service : {
+  deleteUser: (principal_id: text) -> (Result);
+  follow: (followerPrincipal: text, targetPrincipal: text) -> (Result);
+  getAllFollowers: (userPrincipal: text) -> (Result_6);
+  getAllFollowing: (userPrincipal: text) -> (Result_6);
+  getAllSubscriptions: (userPrincipal: text) -> (Result_5);
+  getAllUsers: () -> (vec User);
+  getFollowersCount: (targetPrincipal: text) -> (Result_4);
+  getFollowingCount: (userPrincipal: text) -> (Result_4);
+  getSubscribersCount: (targetPrincipal: text) -> (Result_4);
+  getSubscriptionDetails: (subscriberPrincipal: text, targetPrincipal:
+   text) -> (Result_3);
+  getUser: (principal_id: text) -> (Result_1);
+  getUserByStreamingKey: (streaming_key: text) -> (Result_1);
+  isFollowing: (followerPrincipal: text, targetPrincipal: text) -> (Result_2);
+  isSubscribed: (subscriberPrincipal: text, targetPrincipal: text) ->
+   (Result_2);
+  register: (principal_id: text, userData: User) -> (Result_1);
+  subscribe: (subscriberPrincipal: text, targetPrincipal: text, months:
+   nat) -> (Result);
+  unfollow: (followerPrincipal: text, targetPrincipal: text) -> (Result);
+  unsubscribe: (subscriberPrincipal: text, targetPrincipal: text) -> (Result);
+}

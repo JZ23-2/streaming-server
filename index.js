@@ -1,10 +1,14 @@
-const express = require("express");
-const NodeMediaServer = require("node-media-server");
-const swaggerUi = require("swagger-ui-express");
-const swaggerJsdoc = require("swagger-jsdoc");
-const streamKeyRoutes = require("./routes/streamKeyRoutes");
-const streamKeyService = require("./services/streamKeyService");
-
+import express from "express";
+import NodeMediaServer from "node-media-server";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+// import * as streamKeyRoutes from "./routes/streamKeyRoutes.js";
+import * as streamKeyService from "./services/streamKeyService.js";
+import "dotenv/config.js";
+import {
+  getAllFollowers,
+  getUserByStreamingKey,
+} from "./services/userService.js";
 const app = express();
 app.use(express.json());
 
@@ -34,13 +38,14 @@ const swaggerSpec = swaggerJsdoc(options);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/", streamKeyRoutes);
+// app.use("/", streamKeyRoutes);
 
 const nmsConfig = {
   http: {
     port: 8000,
     allow_origin: "*",
     mediaroot: "./media",
+    host: "0.0.0.0",
   },
   rtmp: {
     port: 1935,
@@ -48,9 +53,10 @@ const nmsConfig = {
     gop_cache: true,
     ping: 10,
     ping_timeout: 60,
+    host: "0.0.0.0",
   },
   trans: {
-    ffmpeg: "./ffmpeg",
+    ffmpeg: "/usr/bin/ffmpeg",
     tasks: [
       {
         app: "live",
@@ -65,20 +71,41 @@ const nmsConfig = {
 
 const nms = new NodeMediaServer(nmsConfig);
 
-nms.on("prePublish", (id, StreamPath, args) => {
+nms.on("prePublish", async (id, StreamPath, args) => {
   console.log(`[NodeEvent on prePublish] id=${id} StreamPath=${StreamPath}`);
 
   const streamKey = StreamPath.split("/").pop();
 
-  if (!streamKeyService.validateStreamKey(streamKey)) {
+  const userResponse = await getUserByStreamingKey(streamKey);
+  if (!userResponse.ok) {
     console.log(`Invalid stream key: ${streamKey}. Rejecting stream.`);
     const session = nms.getSession(id);
     session.reject();
     return;
   }
 
-  const { email, room } = streamKeyService.getStreamKeyInfo(streamKey);
-  console.log(`Stream started by ${email} in room ${room}`);
+  const followersResponse = await getAllFollowers(userResponse.ok.principal_id);
+
+  const payload = {
+    streamerId: userResponse.ok.principal_id,
+    followers: followersResponse.ok,
+  };
+
+  console.log(payload);
+  const notifyResponse = await fetch(
+    `${process.env.BACKEND_URL}/api/v1/global-sockets/start-stream`,
+    {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  console.log(notifyResponse);
+  // const { email, room } = streamKeyService.getStreamKeyInfo(streamKey);
+  // console.log(`Stream started by ${email} in room ${room}`);
 });
 
 nms.run();
