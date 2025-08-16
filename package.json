@@ -14,9 +14,11 @@
     "@dfinity/agent": "^3.2.1",
     "@dfinity/candid": "^3.2.1",
     "@dfinity/principal": "^3.2.1",
+    "@supabase/supabase-js": "^2.55.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "node-media-server": "^2.6.2",
+    "postgres": "^3.4.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }
