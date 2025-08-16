@@ -14,6 +14,7 @@
     "@dfinity/agent": "^3.2.1",
     "@dfinity/candid": "^3.2.1",
     "@dfinity/principal": "^3.2.1",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "node-media-server": "^2.6.2",
     "swagger-jsdoc": "^6.2.8",
