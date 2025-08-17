@@ -7,6 +7,11 @@ export const idlFactory = ({ IDL }) => {
     'created_at' : IDL.Int,
     'principal_id' : IDL.Text,
   });
+  const Followers = IDL.Record({
+    'principal_id' : IDL.Text,
+    'followers' : User,
+  });
+  const Result_7 = IDL.Variant({ 'ok' : IDL.Vec(Followers), 'err' : IDL.Text });
   const Following = IDL.Record({
     'principal_id' : IDL.Text,
     'following' : User,
@@ -26,7 +31,7 @@ export const idlFactory = ({ IDL }) => {
   return IDL.Service({
     'deleteUser' : IDL.Func([IDL.Text], [Result], []),
     'follow' : IDL.Func([IDL.Text, IDL.Text], [Result], []),
-    'getAllFollowers' : IDL.Func([IDL.Text], [Result_6], []),
+    'getAllFollowers' : IDL.Func([IDL.Text], [Result_7], []),
     'getAllFollowing' : IDL.Func([IDL.Text], [Result_6], []),
     'getAllSubscriptions' : IDL.Func([IDL.Text], [Result_5], []),
     'getAllUsers' : IDL.Func([], [IDL.Vec(User)], []),

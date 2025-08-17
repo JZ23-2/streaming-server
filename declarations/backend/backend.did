@@ -13,6 +13,11 @@ type Subscribe =
    start_date: int;
    subscribing: User;
  };
+type Result_7 = 
+ variant {
+   err: text;
+   ok: vec Followers;
+ };
 type Result_6 = 
  variant {
    err: text;
@@ -53,10 +58,15 @@ type Following =
    following: User;
    principal_id: text;
  };
+type Followers = 
+ record {
+   followers: User;
+   principal_id: text;
+ };
 service : {
   deleteUser: (principal_id: text) -> (Result);
   follow: (followerPrincipal: text, targetPrincipal: text) -> (Result);
-  getAllFollowers: (userPrincipal: text) -> (Result_6);
+  getAllFollowers: (userPrincipal: text) -> (Result_7);
   getAllFollowing: (userPrincipal: text) -> (Result_6);
   getAllSubscriptions: (userPrincipal: text) -> (Result_5);
   getAllUsers: () -> (vec User);

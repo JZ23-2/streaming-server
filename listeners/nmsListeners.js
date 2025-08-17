@@ -17,8 +17,8 @@ export function registerNmsListeners(nms, baseDir) {
     console.log(`[NodeEvent on prePublish] id=${id} StreamPath=${StreamPath}`);
 
     const streamKey = StreamPath.split("/").pop();
-
     const userResponse = await getUserByStreamingKey(streamKey);
+    console.log('user response: ', userResponse);
     if (!userResponse?.ok) {
       const session = nms.getSession(id);
       session.reject();
@@ -115,7 +115,6 @@ export function registerNmsListeners(nms, baseDir) {
         if (result.message !== "stream history success") {
           return;
         }
-        console.log(streamDir);
 
         fs.rmSync(streamDir, { recursive: true, force: true });
         streamMap.delete(streamKey);

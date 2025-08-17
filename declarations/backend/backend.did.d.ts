@@ -2,6 +2,7 @@ import type { Principal } from '@dfinity/principal';
 import type { ActorMethod } from '@dfinity/agent';
 import type { IDL } from '@dfinity/candid';
 
+export interface Followers { 'principal_id' : string, 'followers' : User }
 export interface Following { 'principal_id' : string, 'following' : User }
 export type Result = { 'ok' : string } |
   { 'err' : string };
@@ -16,6 +17,8 @@ export type Result_4 = { 'ok' : bigint } |
 export type Result_5 = { 'ok' : Array<Subscribe> } |
   { 'err' : string };
 export type Result_6 = { 'ok' : Array<Following> } |
+  { 'err' : string };
+export type Result_7 = { 'ok' : Array<Followers> } |
   { 'err' : string };
 export interface Subscribe {
   'end_date' : bigint,
@@ -33,7 +36,7 @@ export interface User {
 export interface _SERVICE {
   'deleteUser' : ActorMethod<[string], Result>,
   'follow' : ActorMethod<[string, string], Result>,
-  'getAllFollowers' : ActorMethod<[string], Result_6>,
+  'getAllFollowers' : ActorMethod<[string], Result_7>,
   'getAllFollowing' : ActorMethod<[string], Result_6>,
   'getAllSubscriptions' : ActorMethod<[string], Result_5>,
   'getAllUsers' : ActorMethod<[], Array<User>>,
