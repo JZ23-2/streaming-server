@@ -39,5 +39,6 @@ app.listen(PORT_API, () => {
   console.log(`Swagger UI available at http://localhost:${PORT_API}/api-docs`);
 });
 
+
 nms.run();
 registerNmsListeners(nms, __dirname);

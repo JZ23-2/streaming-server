@@ -18,14 +18,12 @@ export function registerNmsListeners(nms, baseDir) {
 
     const streamKey = StreamPath.split("/").pop();
     const userResponse = await getUserByStreamingKey(streamKey);
-    console.log('user response: ', userResponse);
     if (!userResponse?.ok) {
       const session = nms.getSession(id);
       session.reject();
       return;
     }
-
-    streamMap.set(streamKey, userResponse.ok.principal_id);
+    streamMap.set(userResponse.ok.principal_id, streamKey);
 
     const followersResponse = await getAllFollowers(
       userResponse.ok.principal_id
@@ -36,12 +34,14 @@ export function registerNmsListeners(nms, baseDir) {
       followers: followersResponse.ok,
     };
 
+    console.log(payload.followers);
+
     const notifyResponse = await fetch(
       `${process.env.BACKEND_URL}/api/v1/global-sockets/start-stream`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload, (key, value) => typeof value === "bigint" ? JSON.rawJSON(value.toString()) : value),
       }
     );
 
@@ -63,7 +63,14 @@ export function registerNmsListeners(nms, baseDir) {
     console.log(`[NodeEvent donePublish] id=${id} StreamPath=${StreamPath}`);
 
     const streamKey = StreamPath.split("/").pop();
-    const streamerId = streamMap.get(streamKey);
+    const userResponse = await getUserByStreamingKey(streamKey);
+    if (!userResponse?.ok) {
+      const session = nms.getSession(id);
+      session.reject();
+      return;
+    }
+
+    const streamerId = userResponse.ok.principal_id;
     if (!streamerId) {
       console.warn("Streamer not found in streamMap, skipping upload");
       return;
@@ -117,7 +124,7 @@ export function registerNmsListeners(nms, baseDir) {
         }
 
         fs.rmSync(streamDir, { recursive: true, force: true });
-        streamMap.delete(streamKey);
+        streamMap.delete(streamerId);
       }
     );
     console.log(5)
