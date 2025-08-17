@@ -19,7 +19,7 @@ export function registerNmsListeners(nms, baseDir) {
     const streamKey = StreamPath.split("/").pop();
 
     const userResponse = await getUserByStreamingKey(streamKey);
-    if (!userResponse.ok) {
+    if (!userResponse?.ok) {
       const session = nms.getSession(id);
       session.reject();
       return;
@@ -64,7 +64,6 @@ export function registerNmsListeners(nms, baseDir) {
 
     const streamKey = StreamPath.split("/").pop();
     const streamerId = streamMap.get(streamKey);
-
     if (!streamerId) {
       console.warn("Streamer not found in streamMap, skipping upload");
       return;
@@ -89,7 +88,6 @@ export function registerNmsListeners(nms, baseDir) {
 
         console.log(`FFmpeg conversion complete: ${outputFile}`);
         const fileBuffer = fs.readFileSync(outputFile);
-
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
         const { error: uploadError } = await supabase.storage
@@ -113,15 +111,16 @@ export function registerNmsListeners(nms, baseDir) {
           streamerId,
           publicUrlData.publicUrl
         );
-
         const result = await createStreamHistory(dto);
-        if (result !== "stream history success") {
+        if (result.message !== "stream history success") {
           return;
         }
+        console.log(streamDir);
 
         fs.rmSync(streamDir, { recursive: true, force: true });
         streamMap.delete(streamKey);
       }
     );
+    console.log(5)
   });
 }

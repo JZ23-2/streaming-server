@@ -16,7 +16,7 @@ const nmsConfig = {
     host: "0.0.0.0",
   },
   trans: {
-    ffmpeg: "/opt/homebrew/bin/ffmpeg", // /usr/bin/ffmpeg kalau bingung tinggal ketik which ffmpeg
+    ffmpeg: process.env.FFMPEG_PATH, // /usr/bin/ffmpeg kalau bingung tinggal ketik which ffmpeg
     tasks: [
       {
         app: "live",
