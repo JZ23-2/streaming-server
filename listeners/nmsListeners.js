@@ -9,6 +9,8 @@ import {
 import fetch from "node-fetch";
 import { CreateStreamHistoryDto } from "../dtos/createHistoryDto.js";
 import { createStreamHistory } from "../services/streamHistoryService.js";
+import axios from "axios";
+import { createStream } from "../services/stream-service.js";
 
 export const streamMap = new Map();
 
@@ -25,6 +27,9 @@ export function registerNmsListeners(nms, baseDir) {
     }
     streamMap.set(userResponse.ok.principal_id, streamKey);
 
+    await createStream({hostPrincipalId: userResponse.ok.principal_id, thumbnailURL: });
+
+    
     const followersResponse = await getAllFollowers(
       userResponse.ok.principal_id
     );
@@ -34,7 +39,6 @@ export function registerNmsListeners(nms, baseDir) {
       followers: followersResponse.ok,
     };
 
-    console.log(payload.followers);
 
     const notifyResponse = await fetch(
       `${process.env.BACKEND_URL}/api/v1/global-sockets/start-stream`,
