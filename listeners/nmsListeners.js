@@ -126,12 +126,12 @@ export function registerNmsListeners(nms, baseDir) {
         const { data: publicUrlData } = supabase.storage
           .from("stream_history")
           .getPublicUrl(`${streamerId}/${streamKey}_${timestamp}.mp4`);
-        const response = await stopStream(userResponse.ok.principal_id);
 
         const result = await createStreamHistory({
           hostPrincipalID: streamerId,
           videoUrl: publicUrlData.publicUrl
         });
+        const response = await stopStream(userResponse.ok.principal_id);
         if (result.message !== "stream history success") {
           return;
         }
