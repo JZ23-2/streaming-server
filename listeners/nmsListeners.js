@@ -9,8 +9,9 @@ import {
 import fetch from "node-fetch";
 import { CreateStreamHistoryDto } from "../dtos/createHistoryDto.js";
 import { createStreamHistory } from "../services/streamHistoryService.js";
-import axios from "axios";
-import { createStream } from "../services/stream-service.js";
+import { createStream, stopStream } from "../services/stream-service.js";
+import { getThumbnail } from "../services/ffmpeg-service.js";
+import FormData from "form-data";
 
 export const streamMap = new Map();
 
@@ -27,25 +28,35 @@ export function registerNmsListeners(nms, baseDir) {
     }
     streamMap.set(userResponse.ok.principal_id, streamKey);
 
-    await createStream({hostPrincipalId: userResponse.ok.principal_id, thumbnailURL: });
+    const thumbnailPath = await getThumbnail(streamKey);
+    console.log("thumnail path: ", thumbnailPath);
+    const form = new FormData();
+    form.append("thumbnail", fs.createReadStream(thumbnailPath), {
+      filename: `${streamKey}.jpg`,
+      contentType: "image/jpeg",
+    });
+    form.append("hostPrincipalId", userResponse.ok.principal_id);
 
-    
+    const createStreamResponse = await createStream(form);
+
+    console.log(createStreamResponse);
+
     const followersResponse = await getAllFollowers(
       userResponse.ok.principal_id
     );
-
     const payload = {
       streamerId: userResponse.ok.principal_id,
       followers: followersResponse.ok,
     };
-
 
     const notifyResponse = await fetch(
       `${process.env.BACKEND_URL}/api/v1/global-sockets/start-stream`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload, (key, value) => typeof value === "bigint" ? JSON.rawJSON(value.toString()) : value),
+        body: JSON.stringify(payload, (key, value) =>
+          typeof value === "bigint" ? JSON.rawJSON(value.toString()) : value
+        ),
       }
     );
 
@@ -88,7 +99,6 @@ export function registerNmsListeners(nms, baseDir) {
     }
 
     const outputFile = path.join(streamDir, `${streamKey}.mp4`);
-
     exec(
       `ffmpeg -i "${playlistPath}" -c copy "${outputFile}"`,
       async (error) => {
@@ -116,13 +126,12 @@ export function registerNmsListeners(nms, baseDir) {
         const { data: publicUrlData } = supabase.storage
           .from("stream_history")
           .getPublicUrl(`${streamerId}/${streamKey}_${timestamp}.mp4`);
+        const response = await stopStream(userResponse.ok.principal_id);
 
-        const dto = new CreateStreamHistoryDto(
-          "0f3fa498-ca55-4019-9593-e9e5d2a6ce17", //nanti masukin streamID
-          streamerId,
-          publicUrlData.publicUrl
-        );
-        const result = await createStreamHistory(dto);
+        const result = await createStreamHistory({
+          hostPrincipalID: streamerId,
+          videoUrl: publicUrlData.publicUrl
+        });
         if (result.message !== "stream history success") {
           return;
         }
@@ -131,6 +140,5 @@ export function registerNmsListeners(nms, baseDir) {
         streamMap.delete(streamerId);
       }
     );
-    console.log(5)
   });
 }

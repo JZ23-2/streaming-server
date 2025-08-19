@@ -1,13 +1,12 @@
 import fs from 'fs'
 import { supabase } from './supabaseClient.js'
 
-async function uploadFile() {
-  const filePath = './example.png'
+async function uploadThumbnail(path) {
   const fileBuffer = fs.readFileSync(filePath)
 
   const { data, error } = await supabase.storage
-    .from('stream_history')
-    .upload('uploads/example.png', fileBuffer, {
+    .from('thumbnail')
+    .upload('thumbnails/', fileBuffer, {
       contentType: 'image/png',
     })
 
