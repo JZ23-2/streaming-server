@@ -102,42 +102,46 @@ export function registerNmsListeners(nms, baseDir) {
     exec(
       `ffmpeg -i "${playlistPath}" -c copy "${outputFile}"`,
       async (error) => {
-        if (error) {
-          console.error("FFmpeg conversion error:", error);
-          return;
-        }
+        try {
+          if (error) {
+            console.error("FFmpeg conversion error:", error);
+            throw error;
+          }
 
-        console.log(`FFmpeg conversion complete: ${outputFile}`);
-        const fileBuffer = fs.readFileSync(outputFile);
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+          console.log(`FFmpeg conversion complete: ${outputFile}`);
+          const fileBuffer = fs.readFileSync(outputFile);
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
-        const { error: uploadError } = await supabase.storage
-          .from("stream_history")
-          .upload(`${streamerId}/${streamKey}_${timestamp}.mp4`, fileBuffer, {
-            contentType: "video/mp4",
-            upsert: true,
+          const { error: uploadError } = await supabase.storage
+            .from("stream_history")
+            .upload(`${streamerId}/${streamKey}_${timestamp}.mp4`, fileBuffer, {
+              contentType: "video/mp4",
+              upsert: true,
+            });
+
+          if (uploadError) {
+            console.error("Upload failed:", uploadError);
+            throw uploadError;
+          }
+
+          const { data: publicUrlData } = supabase.storage
+            .from("stream_history")
+            .getPublicUrl(`${streamerId}/${streamKey}_${timestamp}.mp4`);
+
+          const result = await createStreamHistory({
+            hostPrincipalID: streamerId,
+            videoUrl: publicUrlData.publicUrl,
           });
+          if (result.message !== "stream history success") {
+            throw new Error("failed saving stream")
+          }
 
-        if (uploadError) {
-          console.error("Upload failed:", uploadError);
-          return;
+        } catch (error) {
+        } finally {
+          const response = await stopStream(userResponse.ok.principal_id);
+          fs.rmSync(streamDir, { recursive: true, force: true });
+          streamMap.delete(streamerId);
         }
-
-        const { data: publicUrlData } = supabase.storage
-          .from("stream_history")
-          .getPublicUrl(`${streamerId}/${streamKey}_${timestamp}.mp4`);
-
-        const result = await createStreamHistory({
-          hostPrincipalID: streamerId,
-          videoUrl: publicUrlData.publicUrl
-        });
-        const response = await stopStream(userResponse.ok.principal_id);
-        if (result.message !== "stream history success") {
-          return;
-        }
-
-        fs.rmSync(streamDir, { recursive: true, force: true });
-        streamMap.delete(streamerId);
       }
     );
   });
