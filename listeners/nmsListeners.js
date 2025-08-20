@@ -46,7 +46,7 @@ export function registerNmsListeners(nms, baseDir) {
     );
     const payload = {
       streamerId: userResponse.ok.principal_id,
-      followers: followersResponse.ok,
+      followers: followersResponse.ok.map(f => f.principal_id),
     };
 
     const notifyResponse = await fetch(
