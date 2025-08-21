@@ -46,7 +46,7 @@ export function registerNmsListeners(nms, baseDir) {
     );
     const payload = {
       streamerId: userResponse.ok.principal_id,
-      followers: followersResponse.ok.map(f => f.principal_id),
+      followers: followersResponse.ok.map((f) => f.principal_id),
     };
 
     const notifyResponse = await fetch(
@@ -99,6 +99,8 @@ export function registerNmsListeners(nms, baseDir) {
     }
 
     const outputFile = path.join(streamDir, `${streamKey}.mp4`);
+    const response = await stopStream(userResponse.ok.principal_id);
+
     exec(
       `ffmpeg -i "${playlistPath}" -c copy "${outputFile}"`,
       async (error) => {
@@ -129,16 +131,15 @@ export function registerNmsListeners(nms, baseDir) {
             .getPublicUrl(`${streamerId}/${streamKey}_${timestamp}.mp4`);
 
           const result = await createStreamHistory({
+            streamId: response.streamId,
             hostPrincipalID: streamerId,
             videoUrl: publicUrlData.publicUrl,
           });
           if (result.message !== "stream history success") {
-            throw new Error("failed saving stream")
+            throw new Error("failed saving stream");
           }
-
         } catch (error) {
         } finally {
-          const response = await stopStream(userResponse.ok.principal_id);
           fs.rmSync(streamDir, { recursive: true, force: true });
           streamMap.delete(streamerId);
         }
