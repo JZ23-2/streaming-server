@@ -148,27 +148,29 @@ export function registerNmsListeners(nms, baseDir) {
             result.data.streamHistoryId
           );
 
-          console.log("highlight: ", highlights);
+          if (
+            !highlights ||
+            !highlights.clips ||
+            highlights.clips.length === 0
+          ) {
+            console.log("No highlights generated, skipping save.");
+          } else {
+            try {
+              const saveResponse = await axios.post(
+                `${process.env.BACKEND_URL}/api/v1/highlight/create`,
+                highlights,
+                {
+                  headers: { "Content-Type": "application/json" },
+                }
+              );
 
-          if (!highlights) {
-            throw new Error("failed generating highlights");
-          }
-
-          try {
-            const saveResponse = await axios.post(
-              `${process.env.BACKEND_URL}/api/v1/highlight/create`,
-              highlights,
-              {
-                headers: { "Content-Type": "application/json" },
-              }
-            );
-
-            console.log("Highlights saved:", saveResponse.data);
-          } catch (err) {
-            console.error(
-              "Error saving highlights:",
-              err.response?.data || err.message
-            );
+              console.log("Highlights saved:", saveResponse.data);
+            } catch (err) {
+              console.error(
+                "Error saving highlights:",
+                err.response?.data || err.message
+              );
+            }
           }
 
           console.log("Highlights saved:", saveResponse.data);
