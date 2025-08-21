@@ -10,8 +10,10 @@ import fetch from "node-fetch";
 import { CreateStreamHistoryDto } from "../dtos/createHistoryDto.js";
 import { createStreamHistory } from "../services/streamHistoryService.js";
 import { createStream, stopStream } from "../services/stream-service.js";
+import { createHighlight } from "../services/highlight-service.js";
 import { getThumbnail } from "../services/ffmpeg-service.js";
 import FormData from "form-data";
+import axios from "axios";
 
 export const streamMap = new Map();
 
@@ -135,9 +137,43 @@ export function registerNmsListeners(nms, baseDir) {
             hostPrincipalID: streamerId,
             videoUrl: publicUrlData.publicUrl,
           });
+
           if (result.message !== "stream history success") {
             throw new Error("failed saving stream");
           }
+          console.log("result: ", result);
+
+          const highlights = await createHighlight(
+            result.data.videoUrl,
+            result.data.streamHistoryId
+          );
+
+          if (
+            !highlights ||
+            !highlights.clips ||
+            highlights.clips.length === 0
+          ) {
+            console.log("No highlights generated, skipping save.");
+          } else {
+            try {
+              const saveResponse = await axios.post(
+                `${process.env.BACKEND_URL}/api/v1/highlight/create`,
+                highlights,
+                {
+                  headers: { "Content-Type": "application/json" },
+                }
+              );
+
+              console.log("Highlights saved:", saveResponse.data);
+            } catch (err) {
+              console.error(
+                "Error saving highlights:",
+                err.response?.data || err.message
+              );
+            }
+          }
+
+          console.log("Highlights saved:", saveResponse.data);
         } catch (error) {
         } finally {
           fs.rmSync(streamDir, { recursive: true, force: true });
